@@ -1,4 +1,3 @@
-<?php echo $header; ?>
 <html>
 
 <head>
@@ -33,58 +32,16 @@
 
     <script>
         var markers = [];
-        var order_lat = '<?php echo $latitude; ?>';
-        var order_lon = '<?php echo $longitude; ?>';
+        var order_lat = '23.0234892';
+        var order_lon = '72.5075943';
         var map;
-        var user_latitude = '<?php echo $user_latitude; ?>';
-        var user_longitude = '<?php echo $user_longitude; ?>';
+        var user_latitude = '23.0234867';
+        var user_longitude = '72.5075947';
 
         $(function() {
-            getOperator_details()
+            initMap();
         });
-
-        function getOperator_details() {
-            $.ajax({
-                data: {
-                    'order_id': '<?php echo $order_id; ?>'
-                },
-                url: "<?php echo base_url('ordersdetails/trackorder_details'); ?>",
-                type: 'post',
-                dataType: 'json',
-                success: function(res) {
-                    order_lat = parseFloat(res.latitude);
-                    order_lon = parseFloat(res.longitude);
-                    initMap();
-
-                }
-            });
-
-        }
-
-        function getOperator_details_update(lat, lon) {
-
-            $.ajax({
-                data: {
-                    'order_id': '<?php echo $order_id; ?>',
-                    'lat': lat,
-                    'lon': lon
-                },
-                url: "<?php echo base_url('ordersdetails/trackorder_details_update'); ?>",
-                type: 'post',
-                dataType: 'json',
-                success: function(res) {
-
-                    order_lat = parseFloat(res.latitude);
-                    order_lon = parseFloat(res.longitude);
-                    initMap();
-                }
-            });
-
-        }
-
-        /*****************************************************/
         window.initMap = function() {
-
             markers = [{
                 'latitude': parseFloat(order_lat),
                 'longitude': parseFloat(order_lon),
@@ -142,10 +99,6 @@
             map.setCenter(latlngbounds.getCenter());
             map.fitBounds(latlngbounds);
 
-            // google.maps.event.addListener(map, 'click', function(event) {
-            //     alert("Latitude: " + event.latLng.lat() + " " + ", longitude: " + event.latLng.lng());
-            // });
-
             //***********ROUTING****************/
             //Initialize the Direction Service
             var service = new google.maps.DirectionsService();
@@ -189,28 +142,26 @@
                 }
             }
         }
-        /*****************************************************/
     </script>
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=<?php echo GOOGLE_MAP_KEY; ?>&libraries=places&callback=initMap">
     </script>
-
+    
+<!-- For Socket implitation Start -->
     <script src="<?php echo base_url(); ?>node_modules/socket.io-client/dist/socket.io.js"></script>
     <script src="<?php echo base_url(); ?>assets/js/push.min.js"></script>
     <script src="<?php echo base_url(); ?>serviceWorker.js"></script>
     <script>
         var url = window.location.origin;
-        var socket = io.connect(url + ':<?php echo SOCKETIO_PORT; ?>');
+        var socket = io.connect(url + ':<?php echo SOCKETIO_PORT; ?>');  //Socket Port : 5000
         $(document).ready(function() {
             socket.on('track_live_location', function(data) {
-                console.log(data);
-                var order_id = parseInt(data.order_id);
-                var get_order_id = '<?php echo $order_id; ?>';
-                if (order_id == parseInt(get_order_id)) {
-                    getOperator_details_update(data.lat, data.lon);
-                }
+                   order_lat = data.lat;
+                   order_lon = data.lng;
+                   initMap();
             });
         });
     </script>
+<!--      For Socket implitation End  -->
 </body>
 
 </html>
